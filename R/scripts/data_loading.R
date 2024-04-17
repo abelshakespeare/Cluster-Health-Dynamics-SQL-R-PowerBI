@@ -21,11 +21,11 @@ load_data <- function(con, query) {
 con <- setup_connection()
 
 # Example query to load specific data
-query <- "SELECT * FROM healthcare_table WHERE Discharge_Date IS NOT NULL;"
+query <- "SELECT * FROM patients WHERE medicalcondition = 'Asthma';"
 df_loaded <- load_data(con, query)
 
 # Optionally, save to CSV for further use
-write.csv(df_loaded, 'data/processed/loaded_healthcare_data.csv', row.names = FALSE)
+write.csv(df_loaded, '/Users/abelshakespeare/Documents/GitHub/Cluster-Health-Dynamics-SQL-R-PowerBI/data/processed/loaded_healthcare_data.csv', row.names = FALSE)
 
 # Close the database connection
 dbDisconnect(con)
