@@ -1,0 +1,296 @@
+---
+title: "Healthcare Dataset Analysis"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+<h>In this analysis, we dissect a dataset of 10,000 patient admission records, spanning demographics, medical conditions, hospital operations, and financial details. Our objective is to distill actionable insights to drive informed decision-making within the healthcare domain. We begin with an overview of the dataset, scrutinizing variables and distributions, before delving into patient demographics, medical conditions, hospital operations, and financial aspects. Transitioning from exploration to prediction, we utilize advanced modeling techniques to forecast patient outcomes and financial metrics, aiming to equip healthcare stakeholders with proactive solutions. </h>
+
+<h2>Importing Libraries</h2>
+
+```{r}         
+library(readr)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+```
+
+<h2>Reading dataset</h2>
+
+```{r}         
+df <- read_csv('/Users/abelshakespeare/Documents/GitHub/Cluster-Health-Dynamics-SQL-R-PowerBI/data/processed/transformed_healthcare_dataset.csv')
+```
+
+<h2>Exploring Data</h2>
+
+```{r}         
+str(df)
+```
+
+```{r}         
+head(df, 5)
+```
+
+<h2>Data Cleaning</h2>
+
+<h3>Checking for null values and data types</h3>
+
+```{r}         
+df$Date_of_Admission <- ymd(df$Date.of.Admission)
+```
+
+```{r}         
+df$Discharge_Date <- ymd(df$Discharge.Date)
+```
+
+```{r}        
+glimpse(df)
+```
+
+<h3>Checking duplicated rows</h3>
+
+```{r}         
+duplicated_rows <- df %>% 
+  distinct() %>%
+  filter(duplicated(.))
+duplicated_rows
+```
+
+<h3>Checking Outliers</h3>
+
+```{r}         
+summary(df)
+```
+
+```{r}         
+check_outliers <- function(column_name, tune = 3) {
+  mean_column <- mean(df[[column_name]], na.rm = TRUE)
+  std_column <- sd(df[[column_name]], na.rm = TRUE)
+  threshold <- mean_column + tune * std_column
+  outlier <- df %>% 
+    filter((.[[column_name]] > threshold))
+  if (nrow(outlier) == 0) {
+    print("There are no outliers.")
+  } else {
+    return(outlier)
+  }
+}
+    
+```
+
+```{r}         
+check_outliers('Age', tune = 2)
+```
+
+```{r}         
+mismatch_dates <- df$Discharge_Date < df$Date_of_Admission
+```
+
+```{r}         
+df_miss <- df[mismatch_dates, ]
+```
+
+```{r}         
+df_miss
+```
+
+```{r}         
+mismatch_dates_count <- sum(mismatch_dates)
+print(mismatch_dates_count)
+```
+
+```{r}         
+ggplot(df, aes(x = Age)) + 
+  geom_boxplot()
+```
+
+<h2>Exploratory Analysis</h2>
+
+<h3>Descriptive Analysis</h3>
+
+<h4>What is the distribution of ages in the dataset?</h4>
+
+```{r}         
+age <- df$Age
+```
+
+```{r}         
+summary(age)
+```
+
+```{r}         
+ggplot(df, aes(x = Age)) +
+  geom_histogram(bins = 5, fill = 'skyblue', color = 'black') +
+  labs(title = "Distribution of Ages", x = "Age", y = "Count")
+```
+
+<h4>What are the 10 most common medical conditions among patients?</h4>
+
+```{r}         
+count_medical_conditions <- df %>% 
+  count(Medical.Condition, sort = TRUE)
+```
+
+```{r}         
+ggplot(count_medical_conditions[1:10,], aes(x = reorder(Medical.Condition, n), y = n, fill = Medical.Condition)) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(x = "Medical Condition", y = "Count", title = "Count of Medical Conditions") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+<h4>How many unique doctors and hospitals are represented in the dataset?</h4>
+
+```{r}         
+unique_doctor_count <- df %>% 
+  summarise(Unique_Doctor_Count = n_distinct(Doctor))
+unique_hospital_count <- df %>% 
+  summarise(Unique_Hospital_Count = n_distinct(Hospital))
+print(unique_doctor_count)
+print(unique_hospital_count)
+```
+
+<h4>What are the most common blood types?</h4>
+
+```{r}         
+common_blood_type <- df %>% 
+  count(Blood.Type, sort = TRUE)
+```
+
+<h4>What is the average billing amount for admissions?</h4>
+
+```{r}         
+average_billing <- df %>% 
+  summarise(Average_Billing_Amount = mean(Billing.Amount, na.rm = TRUE))
+```
+
+<h4>How many different insurance providers are there and what is their distribution?</h4>
+
+```{r}         
+insurance_distribution_name <- df %>% 
+  count(Insurance.Provider, sort = TRUE)
+```
+
+```{r}         
+ggplot(insurance_distribution_name, aes(x = reorder(Insurance.Provider, n), y = n, fill = Insurance.Provider)) +
+  geom_bar(stat = "identity", color = "black") +
+  labs(x = "Insurance Provider", y = "Count", title = "Count of Insurance Providers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+<h3>Patient Demographics</h3>
+
+<h4>What is the gender distribution of patients?</h4>
+
+```{r}         
+gender_count <- df %>% 
+  count(Gender, sort = TRUE)
+```
+
+```{r}         
+ggplot(df, aes(x = Gender)) +
+  geom_bar(fill = 'skyblue') +
+  labs(x = 'Genders', y = 'Count', title = 'Gender Distribution') +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0))
+```
+
+<h4>Are there any correlations between age and medical conditions?</h4>
+
+```{r}         
+medical_conditions_encoded <- model.matrix(~ Medical.Condition - 1, data = df)
+colnames(medical_conditions_encoded) <- gsub("Medical_Condition", "", colnames(medical_conditions_encoded))
+
+df_encoded <- cbind(df, medical_conditions_encoded)
+
+correlation_with_age <- cor(df_encoded[, c('Age', 'Medical.ConditionAsthma', 'Medical.ConditionCancer', 'Medical.ConditionHypertension', 'Medical.ConditionArthritis', 'Medical.ConditionObesity', 'Medical.ConditionDiabetes')], use = "complete.obs")
+
+correlation_with_age <- correlation_with_age['Age', -1]
+
+cat("Correlation between Age and each medical condition:\n")
+print(correlation_with_age)
+```
+
+<h4>Are there any patterns in admission types based on patient demographics?</h4>
+
+```{r}         
+admission_gender_cross <- table(df$Admission.Type, df$Gender)
+
+bins <- c(0, 18, 30, 50, 70, 100)
+labels <- c('0-17', '18-29', '30-49', '50-69', '70+')
+df$Age_Group <- cut(df$Age, breaks = bins, labels = labels)
+admission_age_cross <- table(df$Admission.Type, df$Age_Group)
+
+cat("Cross-tabulation between Admission Type and Gender:\n")
+print(admission_gender_cross)
+cat("\nCross-tabulation between Admission Type and Age Group:\n")
+print(admission_age_cross)
+```
+
+<h4>How does the distribution of medical conditions vary by gender?</h4>
+
+```{r}         
+medical_condition_gender_cross <- table(df$Medical.Condition, df$Gender)
+
+cat("Cross-tabulation between Medical Condition and Gender:\n")
+print(medical_condition_gender_cross)
+```
+
+<h4>Is there a correlation between age and the length of hospital stay?</h4>
+
+```{r}         
+df$Length_of_Stay <- as.integer(difftime(as.Date(df$Discharge_Date), as.Date(df$Date_of_Admission), units = "days"))
+correlation <- cor(df$Age, df$Length_of_Stay, use = "complete.obs")
+
+cat("Pearson correlation coefficient between Age and Length of Stay:", correlation, "\n")
+```
+
+<h3>Medical Insights</h3>
+
+<h4>What are the top 10 most common medical conditions in the dataset?</h4>
+
+```{r}         
+most_common_medical_condition <- sort(table(df$Medical_Condition), decreasing = TRUE)
+```
+
+<h4>Are certain medical conditions more prevalent in specific age groups?</h4>
+
+```{r}         
+bins <- c(18, 30, 50, 70, 100)
+labels <- c('18-29', '30-49', '50-69', '70+')
+df$Age_Group <- cut(df$Age, breaks = bins, labels = labels)
+medical_condition_age_cross <- prop.table(table(df$Medical.Condition, df$Age_Group), margin = 1)
+
+cat("Percentage of each medical condition within different age groups:\n")
+print(medical_condition_age_cross * 100)
+```
+
+<h4>Can we identify any clusters of medical conditions that often occur together?</h4>
+
+```{r}         
+df$Medical_Condition_Encoded <- as.numeric(factor(df$Medical.Condition))
+
+hc <- hclust(dist(df$Medical_Condition_Encoded), method = "ward.D2")
+cluster_labels <- cutree(hc, h = 50)
+
+df$Cluster <- cluster_labels
+
+ggplot(df, aes(x = factor(Cluster))) +
+  geom_bar(fill = 'skyblue') +
+  labs(title = 'Distribution of Clusters', x = 'Cluster')
+
+clusters <- list(
+  'Cluster 1' = c('Asthma', 'Arthritis'),
+  'Cluster 2' = c('Diabetes', 'Hypertension'),
+  'Cluster 3' = c('Cancer'),
+  'Cluster 4' = c('Obesity')
+)
+
+for (cluster_name in names(clusters)) {
+  cat(cluster_name, ':', toString(clusters[[cluster_name]]), "\n")
+}
+```
