@@ -19,17 +19,18 @@ SQL stands at the core of our data architecture, providing a robust framework fo
 
 ### R
 
-R is instrumental in our data analysis, providing robust tools for statistical modeling and data processing. With a focus on reproducibility and efficiency, our R scripts utilize best practices in coding and data science.
+R is utilized in this project for its excellent capabilities in data manipulation and statistical analysis. We use a suite of R packages to perform data cleaning, exploration, and clustering analysis, specifically focusing on identifying patterns within healthcare data.
 
 #### R Packages Used:
-- **tidyverse (including dplyr and ggplot2)**: For data manipulation and visualization, ensuring that data insights are both accurate and visually compelling.
-- **stats and base R**: For performing rigorous statistical analyses, including clustering and hypothesis testing, which are critical for understanding the patterns in medical data.
-- **Shiny**: To develop interactive web applications directly from R, allowing stakeholders to explore data and insights dynamically.
+- **readr**: For efficient data reading from CSV files, ensuring fast and reliable data input.
+- **dplyr**: Employed extensively for data manipulation tasks such as filtering, summarizing, and arranging data, facilitating a streamlined workflow for data analysis.
+- **lubridate**: Simplifies the management of date-times in R, which is crucial for handling the dates of medical records.
+- **ggplot2**: For creating comprehensive and aesthetically pleasing visualizations. This package is essential for visually representing data findings and enhancing the interpretability of complex datasets.
 
 #### Analytical Processes:
-- **Predictive Modeling**: Developing statistical models to predict trends and potential clusters in healthcare data.
-- **Machine Learning**: Implementing machine learning algorithms to enhance the analysis and predict future health trends based on historical data.
-- **Data Wrangling and Cleaning**: Employing sophisticated techniques to prepare the data for analysis, ensuring high-quality and consistent inputs for our statistical models.
+- **Data Cleaning**: Includes checking for null values, removing duplicates, and correcting data types to ensure the integrity of the analysis.
+- **Exploratory Data Analysis (EDA)**: Utilizes various functions to explore and understand the distributions and relationships within the data. This includes generating descriptive statistics, identifying outliers, and creating visual plots such as histograms and boxplots to uncover patterns and insights.
+- **Clustering Analysis**: Applies hierarchical clustering to identify and analyze clusters of medical conditions that frequently occur together. This analysis helps in understanding common co-occurrences in medical conditions, such as Asthma with Arthritis and Diabetes with Hypertension, providing valuable insights into potential shared causes or treatment approaches.
 
 ### PowerBI
 
