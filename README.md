@@ -59,7 +59,7 @@ These technologies are combined into a cohesive platform that not only supports 
 
 ## Key Findings
 
-The analysis revealed distinct clusters of medical conditions, such as Asthma/Arthritis and Diabetes/Hypertension, which often occur together within the same patient groups. These insights are invaluable for developing targeted healthcare strategies and improving patient outcomes.
+The analysis revealed distinct clusters of medical conditions, such as Asthma/Arthritis and Diabetes/Hypertension, which often occur together within the same patient groups.
 
 ## Installation and Usage
 
