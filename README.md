@@ -46,7 +46,7 @@ These technologies are combined into a cohesive platform that not only supports 
 
 ## Datasets
 
-- **Healthcare Dataset**: Detailed patient records including demographics, medical conditions, treatment details, and outcomes.
+- **Healthcare Dataset**: Detailed patient records including demographics, medical conditions, treatment details, and outcomes. [Dataset]([https://www.kaggle.com/datasets/prasad22/healthcare-dataset])
 
 ## Repository Structure
 
